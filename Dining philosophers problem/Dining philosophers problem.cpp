@@ -49,12 +49,14 @@ void philosopher_fun(int index) {
 		philosopher_cv.Wait(left_lock, [&]() { return chopstick[index] == 1; }); */    //若左邊的筷子數量為1, 則當前執行緒可以繼續執行
 		ETUNI_GET_MUTEX_LOCK(left_lock, mutexArr[index]);
 		chopstick[index] = 0;
+		/*printf("哲學家%d申請左手邊的筷子\n", index);*/
 
 		//申請右手邊的筷子
 		/*std::unique_lock<Mutex> right_lock(mutexArr[(index + 1) % 5]);
 		philosopher_cv.Wait(right_lock, [&]() { return chopstick[(index + 1) % 5] == 1; });*/     //若右邊的筷子數量為1, 則當前執行緒可以繼續執行
 		ETUNI_GET_MUTEX_LOCK(right_lock, mutexArr[(index + 1) % 5]);
 		chopstick[(index + 1) % 5] = 0;
+		/*printf("哲學家%d申請右手邊的筷子\n", index);*/
 
 		get_cpstk_mutex = 1;
 		philosopher_cv.NotifyAll();
@@ -69,7 +71,7 @@ void philosopher_fun(int index) {
 		chopstick[(index + 1) % 5] = 1;
 		philosopher_cv.NotifyAll();
 
-		ThisThread::Sleep(1000);   //當前執行緒暫停1秒
+		//ThisThread::Sleep(1000);   //當前執行緒暫停1秒
 
 		printf("哲學家%d思考\n", index);
 		ThisThread::Sleep(1000);   //當前執行緒暫停1秒
@@ -82,6 +84,7 @@ int _tmain(int argc, _TCHAR* argv[])
  
 	for (int i = 0; i < 5; i++){
 		philosopher_thread[i].StartLoop("philosopher"+std::to_string(i), boost::bind(philosopher_fun, i));
+		philosopher_thread[i].Abort();
 	}
 
 	for (int i = 0; i < 5; i++){
